@@ -1,0 +1,22 @@
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Logs et fichiers runtime
+backend/logs/
+backend/file_certif/
+
+# Fichiers de dev Excel
+backend/*.xlsx
+backend/import_excel.js
+backend/test_import.xlsx
+
+# Build frontend
+frontend/dist/
+
+# Env
+.env
+.env.local
+
+# Claude Code
+.claude/

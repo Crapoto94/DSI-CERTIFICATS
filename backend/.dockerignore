@@ -1,0 +1,6 @@
+node_modules
+file_certif
+logs
+*.xlsx
+import_excel.js
+test_import.xlsx
