@@ -6,7 +6,7 @@ services:
     environment:
       - PORT=3001
     ports:
-      - "3001:3001"
+      - "4100:3001"
     volumes:
       - ./backend/database.sqlite:/app/database.sqlite
       - ./backend/file_certif:/app/file_certif
@@ -17,6 +17,6 @@ services:
     container_name: certif-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "4000:80"
     depends_on:
       - backend
