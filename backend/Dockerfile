@@ -10,9 +10,10 @@ RUN npm install --omit=dev
 
 COPY server.js ./
 COPY database.sqlite ./
+COPY file_certif ./file_certif
 
 # Create necessary directories
-RUN mkdir -p file_certif logs
+RUN mkdir -p logs
 
 EXPOSE 3001
 
