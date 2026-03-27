@@ -19,3 +19,4 @@ frontend/dist/
 
 # Claude Code
 .claude/
+backend/database.sqlite
