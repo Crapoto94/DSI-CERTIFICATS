@@ -326,6 +326,32 @@ app.delete('/api/certificates/:id', async (req, res) => {
     }
 });
 
+app.post('/api/certificates/:id/file', (req, res, next) => {
+    upload.single('file')(req, res, (err) => {
+        if (err) return res.status(500).json({ message: 'Erreur upload', error: err.message });
+        next();
+    });
+}, async (req, res) => {
+    if (!req.file) return res.status(400).json({ message: 'Aucun fichier fourni' });
+    try {
+        const cert = await db.get('SELECT * FROM certificates WHERE id = ?', [req.params.id]);
+        if (!cert) return res.status(404).json({ message: 'Certificat non trouvé' });
+
+        // Supprimer l'ancien fichier si existant
+        if (cert.file_path) {
+            const oldPath = path.join(__dirname, cert.file_path);
+            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        }
+
+        const newFilePath = `file_certif/${req.file.filename}`;
+        await db.run('UPDATE certificates SET file_path = ? WHERE id = ?', [newFilePath, req.params.id]);
+        const updated = await db.get('SELECT * FROM certificates WHERE id = ?', [req.params.id]);
+        res.json(updated);
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de l\'attachement du fichier', error: error.message });
+    }
+});
+
 app.put('/api/certificates/:id/renewal', async (req, res) => {
     const { renewal_status, renewal_comment } = req.body;
     try {

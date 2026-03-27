@@ -49,6 +49,8 @@ const Certif: React.FC = () => {
   const [sortKey, setSortKey] = useState<keyof Certificate>('request_date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [alertFilter, setAlertFilter] = useState<'expired' | 'soon' | null>(null);
+  const [newCertFile, setNewCertFile] = useState<File | null>(null);
+  const [editFile, setEditFile] = useState<File | null>(null);
   const [openActionMenu, setOpenActionMenu] = useState<number | null>(null);
   const [nonRenewalModal, setNonRenewalModal] = useState<{ id: number; orderNum: string } | null>(null);
   const [nonRenewalComment, setNonRenewalComment] = useState<string>('');
@@ -198,6 +200,12 @@ const Certif: React.FC = () => {
       });
 
       if (response.ok) {
+        if (editFile) {
+          const fd = new FormData();
+          fd.append('file', editFile);
+          await fetch(`/api/certificates/${editingId}/file`, { method: 'POST', body: fd });
+          setEditFile(null);
+        }
         setMessage({ type: 'success', text: 'Certificat mis à jour avec succès.' });
         await fetchCertificates();
         cancelEdit();
@@ -352,6 +360,13 @@ const Certif: React.FC = () => {
       });
 
       if (response.ok) {
+        const created = await response.json();
+        if (newCertFile) {
+          const fd = new FormData();
+          fd.append('file', newCertFile);
+          await fetch(`/api/certificates/${created.id}/file`, { method: 'POST', body: fd });
+          setNewCertFile(null);
+        }
         setMessage({ type: 'success', text: 'Certificat ajouté manuellement avec succès.' });
         setShowManualForm(false);
         setNewCertificate({
@@ -543,6 +558,14 @@ const Certif: React.FC = () => {
               <input type="text" placeholder="Libellé produit" value={newCertificate.product_label || ''} onChange={(e) => handleManualChange('product_label', e.target.value)} />
               <input type="date" placeholder="Date fin validité" value={newCertificate.expiry_date || ''} onChange={(e) => handleManualChange('expiry_date', e.target.value)} />
               <textarea placeholder="Observations" value={newCertificate.observations || ''} onChange={(e) => handleManualChange('observations', e.target.value)} rows={2} style={{ gridColumn: '1 / -1' }} />
+            </div>
+            <div className="form-file-row">
+              <label className="form-file-label">
+                <Upload size={14} />
+                {newCertFile ? newCertFile.name : 'Joindre un PDF (optionnel)'}
+                <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={(e) => setNewCertFile(e.target.files?.[0] || null)} />
+              </label>
+              {newCertFile && <button className="form-file-clear" onClick={() => setNewCertFile(null)}><CloseIcon size={13} /></button>}
             </div>
             <button className="upload-button" onClick={handleManualAdd} disabled={uploading}>
               {uploading ? 'Enregistrement...' : 'Enregistrer le certificat'}
@@ -772,10 +795,16 @@ const Certif: React.FC = () => {
                         <div className="actions">
                           {editingId === cert.id ? (
                             <>
+                              <label className="inline-file-label" title="Joindre un PDF">
+                                <Upload size={14} />
+                                {editFile ? <span className="inline-file-name">{editFile.name}</span> : null}
+                                <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={(e) => setEditFile(e.target.files?.[0] || null)} />
+                              </label>
+                              {editFile && <button className="cancel-btn" title="Retirer le fichier" onClick={() => setEditFile(null)}><CloseIcon size={14} /></button>}
                               <button onClick={saveEdit} className="confirm-btn" title="Enregistrer" disabled={uploading}>
                                 <Check size={16} />
                               </button>
-                              <button onClick={cancelEdit} className="cancel-btn" title="Annuler" disabled={uploading}>
+                              <button onClick={() => { cancelEdit(); setEditFile(null); }} className="cancel-btn" title="Annuler" disabled={uploading}>
                                 <CloseIcon size={16} />
                               </button>
                             </>
@@ -1147,6 +1176,59 @@ const Certif: React.FC = () => {
           background: #0f766e;
           color: white;
           cursor: pointer;
+        }
+        .form-file-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+        .form-file-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 14px;
+          border: 1px dashed #cbd5e1;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 13px;
+          color: #475569;
+          background: #f8fafc;
+          transition: all 0.2s;
+        }
+        .form-file-label:hover { border-color: #94a3b8; background: #f1f5f9; }
+        .form-file-clear {
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #94a3b8;
+          padding: 4px;
+          display: flex;
+          align-items: center;
+        }
+        .form-file-clear:hover { color: #ef4444; }
+        .inline-file-label {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 5px 8px;
+          border: 1px dashed #cbd5e1;
+          border-radius: 6px;
+          cursor: pointer;
+          color: #64748b;
+          font-size: 12px;
+          background: #f8fafc;
+          white-space: nowrap;
+          transition: all 0.15s;
+        }
+        .inline-file-label:hover { border-color: #94a3b8; background: #f1f5f9; }
+        .inline-file-name {
+          max-width: 100px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-size: 11px;
+          color: #0f766e;
         }
         .manual-form button:disabled {
           opacity: 0.6;
