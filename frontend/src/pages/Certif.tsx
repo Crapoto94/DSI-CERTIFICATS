@@ -187,10 +187,14 @@ const Certif: React.FC = () => {
 
     setUploading(true);
     try {
+      const payload = {
+        ...editingCertificate,
+        is_provisional: editingCertificate.expiry_date ? 0 : editingCertificate.is_provisional
+      };
       const response = await fetch(`/api/certificates/${editingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingCertificate)
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
