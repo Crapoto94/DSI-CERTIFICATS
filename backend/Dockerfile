@@ -9,7 +9,6 @@ COPY package.json ./
 RUN npm install --omit=dev
 
 COPY server.js ./
-COPY database.sqlite ./
 COPY file_certif ./file_certif
 
 # Create necessary directories
